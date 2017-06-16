@@ -1,4 +1,4 @@
-FROM openshift/base-rhel7
+FROM rhscl/s2i-base-rhel7:1
 
 # This image provides a Node.JS environment you can use to run your Node.JS
 # applications.
@@ -10,24 +10,33 @@ EXPOSE 8080
 # This image will be initialized with "npm run $NPM_RUN"
 # See https://docs.npmjs.com/misc/scripts, and your repo's package.json
 # file for possible values of NPM_RUN
-ENV NPM_RUN=start \
-    NODEJS_VERSION=0.10 \
+ENV NODEJS_VERSION=4 \
+    NPM_RUN=start \
     NPM_CONFIG_PREFIX=$HOME/.npm-global \
     PATH=$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH
 
-LABEL summary="Platform for building and running Node.js 0.10 applications" \
-      io.k8s.description="Platform for building and running Node.js 0.10 applications" \
-      io.k8s.display-name="Node.js 0.10" \
+ENV SUMMARY="Platform for building and running Node.js $NODEJS_VERSION applications" \
+    DESCRIPTION="Node.js $NODEJS_VERSION available as docker container is a base platform for \
+building and running various Node.js $NODEJS_VERSION applications and frameworks. \
+Node.js is a platform built on Chrome's JavaScript runtime for easily building \
+fast, scalable network applications. Node.js uses an event-driven, non-blocking I/O model \
+that makes it lightweight and efficient, perfect for data-intensive real-time applications \
+that run across distributed devices."
+
+LABEL summary="$SUMMARY" \
+      description="$DESCRIPTION" \
+      io.k8s.description="$SUMMARY" \
+      io.k8s.display-name="Node.js $NODEJS_VERSION" \
       io.openshift.expose-services="8080:http" \
-      io.openshift.tags="builder,nodejs,nodejs010" \
+      io.openshift.tags="builder,nodejs,nodejs$NODEJS_VERSION" \
       com.redhat.dev-mode="DEV_MODE:false" \
       com.redhat.deployments-dir="/opt/app-root/src" \
       com.redhat.dev-mode.port="DEBUG_PORT:5858"
 
 # Labels consumed by Red Hat build service
-LABEL com.redhat.component="nodejs010" \
-      name="openshift3/nodejs-010-rhel7" \
-      version="0.10" \
+LABEL com.redhat.component="rh-nodejs4-docker" \
+      name="rhscl/nodejs-4-rhel7" \
+      version="4" \
       release="1" \
       architecture="x86_64"
 
@@ -38,10 +47,12 @@ RUN yum repolist > /dev/null && \
     yum-config-manager --enable rhel-7-server-optional-rpms && \
     yum-config-manager --enable rhel-7-server-ose-3.2-rpms && \
     yum-config-manager --disable epel >/dev/null || : && \
-    INSTALL_PKGS="nodejs010 nodejs010-nodejs-nodemon bzip2 nss_wrapper" && \
+    INSTALL_PKGS="rh-nodejs4 rh-nodejs4-npm rh-nodejs4-nodejs-nodemon nss_wrapper" && \
+    ln -s /usr/lib/node_modules/nodemon/bin/nodemon.js /usr/bin/nodemon && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
-    yum clean all -y
+    yum clean all -y && \
+    npm install -g yarn -s
 
 # Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
