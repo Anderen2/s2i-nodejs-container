@@ -34,8 +34,8 @@ LABEL summary="$SUMMARY" \
       com.redhat.dev-mode.port="DEBUG_PORT:5858"
 
 # Labels consumed by Red Hat build service
-LABEL com.redhat.component="rh-nodejs4-docker" \
-      name="rhscl/nodejs-4-rhel7" \
+LABEL com.redhat.component="rh-nodejs4-docker-yarn" \
+      name="nodejs-4-rhel7-yarn" \
       version="4" \
       release="1" \
       architecture="x86_64"
