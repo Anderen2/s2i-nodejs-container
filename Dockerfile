@@ -1,7 +1,9 @@
-FROM rhscl/s2i-base-rhel7:1
+FROM centos/s2i-base-centos7
 
 # This image provides a Node.JS environment you can use to run your Node.JS
 # applications.
+
+LABEL MAINTAINER SoftwareCollections.org <sclorg@redhat.com>
 
 EXPOSE 8080
 
@@ -14,6 +16,7 @@ ENV NODEJS_VERSION=4 \
     NPM_RUN=start \
     NPM_CONFIG_PREFIX=$HOME/.npm-global \
     PATH=$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH
+
 
 ENV SUMMARY="Platform for building and running Node.js $NODEJS_VERSION applications" \
     DESCRIPTION="Node.js $NODEJS_VERSION available as docker container is a base platform for \
@@ -40,13 +43,7 @@ LABEL com.redhat.component="rh-nodejs4-docker-yarn" \
       release="1" \
       architecture="x86_64"
 
-# To use subscription inside container yum command has to be run first (before yum-config-manager)
-# https://access.redhat.com/solutions/1443553
-RUN yum repolist > /dev/null && \
-    yum-config-manager --enable rhel-server-rhscl-7-rpms && \
-    yum-config-manager --enable rhel-7-server-optional-rpms && \
-    yum-config-manager --enable rhel-7-server-ose-3.2-rpms && \
-    yum-config-manager --disable epel >/dev/null || : && \
+RUN yum install -y centos-release-scl-rh && \
     INSTALL_PKGS="rh-nodejs4 rh-nodejs4-npm rh-nodejs4-nodejs-nodemon nss_wrapper" && \
     ln -s /usr/lib/node_modules/nodemon/bin/nodemon.js /usr/bin/nodemon && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
